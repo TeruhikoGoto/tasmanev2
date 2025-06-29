@@ -29,4 +29,4 @@ dist-ssr
 hosting.*.cache
 .firebase
 firebase-debug.log
-firesttore.debug.log
+firestore-debug.log
