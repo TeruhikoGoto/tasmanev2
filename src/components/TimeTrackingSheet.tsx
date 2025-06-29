@@ -95,7 +95,6 @@ const TimeTrackingSheet: React.FC = () => {
 
   return (
     <div className="time-tracking-sheet">
-      <h1>工数管理アプリ</h1>
       
       <SessionManager
         allSessions={allSessions}

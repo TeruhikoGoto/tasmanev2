@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useFirestore } from './useFirestore';
+import { useAuth } from './useAuth';
 import { TimeEntry } from '../types/TimeEntry';
 
 export const useTimeTracking = () => {
-  const { data, loading, error, addDocument, updateDocument } = useFirestore('timeTracking');
+  const { user } = useAuth();
+  const collectionPath = user ? `users/${user.uid}/timeTracking` : 'timeTracking';
+  const { data, loading, error, addDocument, updateDocument } = useFirestore(collectionPath);
   const [currentSession, setCurrentSession] = useState<{ id?: string; entries: TimeEntry[] }>({
     entries: []
   });

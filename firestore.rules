@@ -2,16 +2,19 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 工数管理データへのアクセス許可
-    match /timeTracking/{document} {
-      // 読み書きを全て許可（開発用）
-      // 本番環境では認証やより厳密な権限設定を行ってください
-      allow read, write: if true;
+    // ユーザー別の工数管理データ
+    match /users/{userId}/timeTracking/{document} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // その他のコレクションへのアクセスは拒否
+    // 下位互換性のため（既存データ用）
+    match /timeTracking/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // その他のドキュメントは認証が必要
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if request.auth != null;
     }
   }
 }

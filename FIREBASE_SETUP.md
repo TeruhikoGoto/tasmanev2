@@ -56,7 +56,30 @@ firebase init
 firebase deploy --only firestore
 ```
 
-## 6. アプリのビルドとデプロイ
+## 6. ローカル開発での使用方法
+
+### Firestore Emulatorを使用（推奨）
+
+```bash
+# Emulatorと開発サーバーを同時起動
+npm run dev:emulator
+
+# または個別に起動
+npm run emulators  # Firestore Emulatorのみ起動
+npm run dev        # 開発サーバーのみ起動
+```
+
+### 本番Firestoreを使用
+
+```bash
+# 環境変数を設定
+echo "VITE_USE_PRODUCTION_FIREBASE=true" >> .env
+
+# 開発サーバー起動
+npm run dev
+```
+
+## 7. アプリのビルドとデプロイ
 
 ```bash
 # アプリをビルド
