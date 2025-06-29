@@ -1,12 +1,15 @@
 import { useAuth } from './hooks/useAuth';
+import { useBasicAuth } from './hooks/useBasicAuth';
 import { useTimeTracking } from './hooks/useTimeTracking';
 import TimeTrackingSheet from './components/TimeTrackingSheet';
 import SessionSidebar from './components/SessionSidebar';
 import LoginForm from './components/LoginForm';
+import BasicAuth from './components/BasicAuth';
 import Header from './components/Header';
 import './App.css';
 
 function App() {
+  const { isAuthenticated: basicAuthStatus, isLoading: basicAuthLoading, login: basicLogin } = useBasicAuth();
   const { user, loading } = useAuth();
   const {
     sessionsByDate,
@@ -16,6 +19,27 @@ function App() {
     loadSession
   } = useTimeTracking();
 
+  // Basic認証のチェック
+  if (basicAuthLoading) {
+    return (
+      <div className="App">
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>認証を確認中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!basicAuthStatus) {
+    return (
+      <div className="App">
+        <BasicAuth onAuthenticated={basicLogin} />
+      </div>
+    );
+  }
+
+  // Firebase認証のチェック（Basic認証通過後）
   if (loading) {
     return (
       <div className="App">

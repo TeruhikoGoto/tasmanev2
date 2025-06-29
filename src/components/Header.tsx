@@ -1,12 +1,15 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useBasicAuth } from '../hooks/useBasicAuth';
 import './Header.css';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
+  const { logout: basicLogout } = useBasicAuth();
 
   const handleLogout = async () => {
     await logout();
+    basicLogout(); // Basic認証もログアウト
   };
 
   return (
