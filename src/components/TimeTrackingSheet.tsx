@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import SpreadsheetCell from './SpreadsheetCell';
 import TimeSelect from './TimeSelect';
-import SessionManager from './SessionManager';
+import TimeInputSelect from './TimeInputSelect';
 import { useTimeTracking } from '../hooks/useTimeTracking';
 import './TimeTrackingSheet.css';
 
@@ -10,12 +10,60 @@ const TimeTrackingSheet: React.FC = () => {
     currentSession,
     loading,
     error,
-    isSaving,
     saveSession,
     updateEntries
   } = useTimeTracking();
 
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // クリーンアップ
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const entries = currentSession.entries;
+
+  // 工数サマリーを生成する関数
+  const generateWorkSummary = () => {
+    const workGroups: { [key: string]: number } = {};
+    
+    entries.forEach(entry => {
+      entry.tasks?.forEach((task) => {
+        if (task.content && task.content.trim() && task.time > 0) {
+          const content = task.content.trim();
+          workGroups[content] = (workGroups[content] || 0) + task.time;
+        }
+      });
+    });
+    
+    return workGroups;
+  };
+
+  const workSummary = generateWorkSummary();
+  const sortedWorkItems = Object.entries(workSummary)
+    .sort(([, a], [, b]) => b - a);
+  const totalTime = Object.values(workSummary).reduce((sum, time) => sum + time, 0);
+
+  // 自動保存関数
+  const autoSave = async (updatedEntries: any[]) => {
+    // 既存のタイマーをクリア
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // 1秒後に保存実行
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await saveSession(updatedEntries);
+      } catch (error) {
+        console.error('自動保存エラー:', error);
+      }
+    }, 1000);
+  };
 
   // 時刻を1時間進める関数
   const addOneHour = (time: string): string => {
@@ -34,6 +82,7 @@ const TimeTrackingSheet: React.FC = () => {
         endTime: ''
       }));
       updateEntries(clearedEntries);
+      autoSave(clearedEntries);
       return;
     }
 
@@ -51,6 +100,7 @@ const TimeTrackingSheet: React.FC = () => {
     });
 
     updateEntries(finalEntries);
+    autoSave(finalEntries);
   };
 
   const updateTask = (entryId: string, taskIndex: number, field: 'content' | 'time', value: string) => {
@@ -67,6 +117,7 @@ const TimeTrackingSheet: React.FC = () => {
       return entry;
     });
     updateEntries(updatedEntries);
+    autoSave(updatedEntries);
   };
 
 
@@ -88,65 +139,85 @@ const TimeTrackingSheet: React.FC = () => {
 
   return (
     <div className="time-tracking-sheet">
-      <SessionManager
-        isSaving={isSaving}
-        onSave={() => saveSession(entries)}
-      />
-      
-      <div className="spreadsheet-container">
-        <table className="spreadsheet-table">
-          <thead>
-            <tr>
-              <th>開始</th>
-              <th>完了</th>
-              <th>作業内容1</th>
-              <th>時間1</th>
-              <th>作業内容2</th>
-              <th>時間2</th>
-              <th>作業内容3</th>
-              <th>時間3</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((entry, index) => (
-              <tr key={entry.id}>
-                <td>
-                  {index === 0 ? (
-                    <TimeSelect
-                      value={entry.startTime}
-                      onChange={handleFirstStartTimeChange}
-                    />
-                  ) : (
-                    <div className="time-display">{entry.startTime}</div>
-                  )}
-                </td>
-                <td>
-                  <div className="time-display">{entry.endTime}</div>
-                </td>
-                {entry.tasks.map((task, taskIndex) => (
-                  <React.Fragment key={taskIndex}>
-                    <td>
-                      <SpreadsheetCell
-                        value={task.content}
-                        onChange={(value) => updateTask(entry.id, taskIndex, 'content', value)}
-                        placeholder={`作業内容${taskIndex + 1}`}
-                      />
-                    </td>
-                    <td>
-                      <SpreadsheetCell
-                        type="number"
-                        value={task.time}
-                        onChange={(value) => updateTask(entry.id, taskIndex, 'time', value)}
-                        placeholder="30"
-                      />
-                    </td>
-                  </React.Fragment>
-                ))}
+      <div className="main-content">
+        <div className="spreadsheet-container">
+          <table className="spreadsheet-table">
+            <thead>
+              <tr>
+                <th>開始</th>
+                <th>完了</th>
+                <th>作業内容1</th>
+                <th>時間1</th>
+                <th>作業内容2</th>
+                <th>時間2</th>
+                <th>作業内容3</th>
+                <th>時間3</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {entries.map((entry, index) => (
+                <tr key={entry.id}>
+                  <td>
+                    {index === 0 ? (
+                      <TimeSelect
+                        value={entry.startTime}
+                        onChange={handleFirstStartTimeChange}
+                      />
+                    ) : (
+                      <div className="time-display">{entry.startTime}</div>
+                    )}
+                  </td>
+                  <td>
+                    <div className="time-display">{entry.endTime}</div>
+                  </td>
+                  {entry.tasks.map((task, taskIndex) => (
+                    <React.Fragment key={taskIndex}>
+                      <td>
+                        <SpreadsheetCell
+                          value={task.content}
+                          onChange={(value) => updateTask(entry.id, taskIndex, 'content', value)}
+                          placeholder={`作業内容${taskIndex + 1}`}
+                        />
+                      </td>
+                      <td>
+                        <TimeInputSelect
+                          value={task.time}
+                          onChange={(value) => updateTask(entry.id, taskIndex, 'time', value)}
+                        />
+                      </td>
+                    </React.Fragment>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         
+        <div className="display-area">
+          <h3>工数サマリー</h3>
+          <div className="display-content">
+            {sortedWorkItems.length === 0 ? (
+              <p className="no-data">作業データがありません</p>
+            ) : (
+              <>
+                <div className="work-summary">
+                  {sortedWorkItems.map(([content, time]) => (
+                    <div key={content} className="work-item">
+                      <span className="work-content">{content}</span>
+                      <span className="work-time">{time}分</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="total-summary">
+                  <div className="total-item">
+                    <span className="total-label">合計</span>
+                    <span className="total-time">{totalTime}分</span>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

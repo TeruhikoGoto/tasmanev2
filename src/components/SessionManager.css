@@ -1,9 +1,11 @@
+/* SessionManager は削除されたため、このスタイルは不要
 .session-manager {
   position: fixed;
   bottom: 20px;
   right: 20px;
   z-index: 1000;
 }
+*/
 
 .session-controls {
   padding: 16px;
