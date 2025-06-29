@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TimeTrackingSession, SessionsByDate } from '../types/TimeEntry';
-import { formatDateForDisplay, getMonthFromDate } from '../utils/dateUtils';
+import { getMonthFromDate } from '../utils/dateUtils';
 import './SessionSidebar.css';
 
 interface SessionSidebarProps {
@@ -20,6 +20,41 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
 }) => {
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
+
+  // 日付から日のみを取得する関数
+  const getDayFromDate = (dateString: string): string => {
+    if (!dateString || typeof dateString !== 'string') {
+      return '不明';
+    }
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return '不明';
+      }
+      
+      return `${date.getDate()}日`;
+    } catch (error) {
+      console.error('Error getting day from date:', error, dateString);
+      return '不明';
+    }
+  };
+
+  // 分を時間分形式に変換する関数
+  const formatMinutesToHoursMinutes = (minutes: number): string => {
+    if (minutes === 0) return '0分';
+    
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    if (hours === 0) {
+      return `${remainingMinutes}分`;
+    } else if (remainingMinutes === 0) {
+      return `${hours}時間`;
+    } else {
+      return `${hours}時間${remainingMinutes}分`;
+    }
+  };
 
   const toggleYear = (year: string) => {
     const newExpanded = new Set(expandedYears);
@@ -131,14 +166,11 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
                                       onClick={() => session.id && onSessionSelect(session.id)}
                                     >
                                       <div className="session-name">
-                                        {session.sessionDate || '日付不明'}
+                                        {getDayFromDate(session.sessionDate)}
                                       </div>
                                       <div className="session-meta">
-                                        <span className="session-date">
-                                          {formatDateForDisplay(session.sessionDate)}
-                                        </span>
                                         <span className="session-hours">
-                                          {session.totalHours || 0}分
+                                          {formatMinutesToHoursMinutes(session.totalHours || 0)}
                                         </span>
                                       </div>
                                     </div>

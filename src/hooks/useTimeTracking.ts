@@ -127,6 +127,57 @@ export const useTimeTracking = () => {
     }));
   };
 
+  // 指定した行の下に新しい行を追加
+  const insertRowAfter = (index: number) => {
+    const newEntries = [...currentSession.entries];
+    const previousEntry = newEntries[index];
+    
+    // 新しいエントリのIDを生成（最大ID + 1）
+    const maxId = Math.max(0, ...newEntries.map(entry => parseInt(entry.id) || 0));
+    const newId = (maxId + 1).toString();
+    
+    // 前の行の完了時間から1時間後の範囲を計算
+    const calculateNextTimeRange = (prevEndTime: string) => {
+      if (!prevEndTime || prevEndTime === '') {
+        return { startTime: '', endTime: '' };
+      }
+      
+      // 時間形式をパース（HH:MM形式）
+      const timeMatch = prevEndTime.match(/^(\d{1,2}):(\d{2})$/);
+      if (!timeMatch) {
+        return { startTime: prevEndTime, endTime: '' };
+      }
+      
+      const hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      
+      // 1時間後を計算
+      const nextHours = (hours + 1) % 24;
+      const newStartTime = `${hours}:${minutes.toString().padStart(2, '0')}`;
+      const newEndTime = `${nextHours}:${minutes.toString().padStart(2, '0')}`;
+      
+      return { startTime: newStartTime, endTime: newEndTime };
+    };
+    
+    const nextTimeRange = calculateNextTimeRange(previousEntry.endTime);
+    
+    const newEntry: TimeEntry = {
+      id: newId,
+      startTime: nextTimeRange.startTime,
+      endTime: nextTimeRange.endTime,
+      tasks: [
+        { content: '', time: 0 },
+        { content: '', time: 0 },
+        { content: '', time: 0 }
+      ]
+    };
+    
+    // 指定したインデックスの後に挿入
+    newEntries.splice(index + 1, 0, newEntry);
+    
+    updateEntries(newEntries);
+  };
+
   // セッションを年月別に整理
   const getSessionsByDate = (): SessionsByDate => {
     const sessionsByDate: SessionsByDate = {};
@@ -189,6 +240,7 @@ export const useTimeTracking = () => {
     startNewSession,
     loadSession,
     updateEntries,
+    insertRowAfter,
     calculateTotalHours
   };
 };

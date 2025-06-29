@@ -11,7 +11,8 @@ const TimeTrackingSheet: React.FC = () => {
     loading,
     error,
     saveSession,
-    updateEntries
+    updateEntries,
+    insertRowAfter
   } = useTimeTracking();
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -26,6 +27,22 @@ const TimeTrackingSheet: React.FC = () => {
   }, []);
 
   const entries = currentSession.entries;
+
+  // 分を時間分形式に変換する関数
+  const formatTimeDisplay = (minutes: number): string => {
+    if (minutes === 0) return '0分';
+    
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    if (hours === 0) {
+      return `${remainingMinutes}分`;
+    } else if (remainingMinutes === 0) {
+      return `${hours}時間`;
+    } else {
+      return `${hours}時間${remainingMinutes}分`;
+    }
+  };
 
   // 工数サマリーを生成する関数
   const generateWorkSummary = () => {
@@ -152,6 +169,7 @@ const TimeTrackingSheet: React.FC = () => {
                 <th>時間2</th>
                 <th>作業内容3</th>
                 <th>時間3</th>
+                <th>合計</th>
               </tr>
             </thead>
             <tbody>
@@ -187,10 +205,24 @@ const TimeTrackingSheet: React.FC = () => {
                       </td>
                     </React.Fragment>
                   ))}
+                  <td>
+                    <div className="total-time-cell">
+                      {entry.tasks.reduce((sum, task) => sum + (task.time || 0), 0)}分
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <div className="table-controls">
+            <button
+              className="add-row-btn-bottom"
+              onClick={() => insertRowAfter(entries.length - 1)}
+              title="一番下に行を追加"
+            >
+              +
+            </button>
+          </div>
         </div>
         
         <div className="display-area">
@@ -204,14 +236,14 @@ const TimeTrackingSheet: React.FC = () => {
                   {sortedWorkItems.map(([content, time]) => (
                     <div key={content} className="work-item">
                       <span className="work-content">{content}</span>
-                      <span className="work-time">{time}分</span>
+                      <span className="work-time">{formatTimeDisplay(time)}</span>
                     </div>
                   ))}
                 </div>
                 <div className="total-summary">
                   <div className="total-item">
                     <span className="total-label">合計</span>
-                    <span className="total-time">{totalTime}分</span>
+                    <span className="total-time">{formatTimeDisplay(totalTime)}</span>
                   </div>
                 </div>
               </>
