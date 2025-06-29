@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { TimeEntry } from '../types/TimeEntry';
+import React from 'react';
 import SpreadsheetCell from './SpreadsheetCell';
 import TimeSelect from './TimeSelect';
 import SessionManager from './SessionManager';
@@ -44,7 +43,7 @@ const TimeTrackingSheet: React.FC = () => {
 
     // 時刻を順次計算して設定
     let currentTime = startTime;
-    const finalEntries = entries.map((entry, index) => {
+    const finalEntries = entries.map((entry) => {
       const startTime = currentTime;
       const endTime = addOneHour(currentTime);
       currentTime = endTime;

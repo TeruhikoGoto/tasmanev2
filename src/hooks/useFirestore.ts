@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { 
   collection, 
   doc, 
-  getDocs, 
   addDoc, 
   updateDoc, 
   deleteDoc, 
@@ -12,7 +11,6 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { TimeTrackingData } from '../types/TimeEntry';
 
 export const useFirestore = (collectionName: string) => {
   const [data, setData] = useState<any[]>([]);

@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 工数管理データへのアクセス許可
+    match /timeTracking/{document} {
+      // 読み書きを全て許可（開発用）
+      // 本番環境では認証やより厳密な権限設定を行ってください
+      allow read, write: if true;
+    }
+    
+    // その他のコレクションへのアクセスは拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
