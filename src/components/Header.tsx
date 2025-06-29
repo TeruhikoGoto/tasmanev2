@@ -12,7 +12,7 @@ const Header: React.FC = () => {
   return (
     <header className="app-header">
       <div className="header-content">
-        <h1>工数管理アプリ</h1>
+        <h1>TasmaneV2</h1>
         
         <div className="user-info">
           <span className="user-email">

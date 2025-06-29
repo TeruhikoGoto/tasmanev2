@@ -10,6 +10,18 @@ export interface TimeEntry {
   tasks: WorkTask[];
 }
 
-export interface TimeTrackingData {
+export interface TimeTrackingSession {
+  id?: string;
+  sessionDate: string; // YYYY-MM-DD format
   entries: TimeEntry[];
+  totalHours: number;
+  userId: string;
+  createdAt?: any; // Firestore Timestamp
+  updatedAt?: any; // Firestore Timestamp
+}
+
+export interface SessionsByDate {
+  [year: string]: {
+    [month: string]: TimeTrackingSession[];
+  };
 }

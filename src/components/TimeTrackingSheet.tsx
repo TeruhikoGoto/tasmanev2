@@ -8,15 +8,11 @@ import './TimeTrackingSheet.css';
 const TimeTrackingSheet: React.FC = () => {
   const {
     currentSession,
-    allSessions,
     loading,
     error,
     isSaving,
     saveSession,
-    startNewSession,
-    loadSession,
-    updateEntries,
-    calculateTotalHours
+    updateEntries
   } = useTimeTracking();
 
   const entries = currentSession.entries;
@@ -73,9 +69,6 @@ const TimeTrackingSheet: React.FC = () => {
     updateEntries(updatedEntries);
   };
 
-  const resetToDefault = () => {
-    startNewSession();
-  };
 
   if (loading) {
     return (
@@ -95,15 +88,9 @@ const TimeTrackingSheet: React.FC = () => {
 
   return (
     <div className="time-tracking-sheet">
-      
       <SessionManager
-        allSessions={allSessions}
-        currentSessionId={currentSession.id}
         isSaving={isSaving}
-        onSave={(sessionName) => saveSession(entries, sessionName)}
-        onNewSession={startNewSession}
-        onLoadSession={loadSession}
-        totalHours={calculateTotalHours(entries)}
+        onSave={() => saveSession(entries)}
       />
       
       <div className="spreadsheet-container">
@@ -118,7 +105,6 @@ const TimeTrackingSheet: React.FC = () => {
               <th>時間2</th>
               <th>作業内容3</th>
               <th>時間3</th>
-              <th>操作</th>
             </tr>
           </thead>
           <tbody>
@@ -156,16 +142,6 @@ const TimeTrackingSheet: React.FC = () => {
                     </td>
                   </React.Fragment>
                 ))}
-                <td>
-                  {index === 0 && (
-                    <button 
-                      onClick={resetToDefault}
-                      className="reset-btn"
-                    >
-                      リセット
-                    </button>
-                  )}
-                </td>
               </tr>
             ))}
           </tbody>

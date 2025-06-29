@@ -2,7 +2,9 @@
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #fafafa;
-  min-height: 100vh;
+  min-height: calc(100vh - 60px); /* Header height adjustment */
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .time-tracking-sheet h1 {
@@ -23,6 +25,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  table-layout: fixed;
 }
 
 .spreadsheet-table th {
@@ -45,6 +48,8 @@
   border-bottom: 1px solid #e0e0e0;
   border-right: 1px solid #e0e0e0;
   position: relative;
+  width: auto;
+  min-width: 0;
 }
 
 .spreadsheet-table td:last-child {
@@ -61,6 +66,8 @@
   background: transparent;
   color: #333;
   font-family: inherit;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .spreadsheet-cell:focus {
@@ -121,6 +128,8 @@
   color: #333;
   font-family: inherit;
   cursor: pointer;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .time-select:focus {

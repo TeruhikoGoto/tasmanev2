@@ -29,7 +29,7 @@ const LoginForm: React.FC = () => {
   return (
     <div className="login-container">
       <div className="login-form">
-        <h1>工数管理アプリ</h1>
+        <h1>TasmaneV2</h1>
         <p className="login-subtitle">
           {isSignUp ? 'アカウントを作成' : 'ログインしてください'}
         </p>

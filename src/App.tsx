@@ -1,11 +1,20 @@
 import { useAuth } from './hooks/useAuth';
+import { useTimeTracking } from './hooks/useTimeTracking';
 import TimeTrackingSheet from './components/TimeTrackingSheet';
+import SessionSidebar from './components/SessionSidebar';
 import LoginForm from './components/LoginForm';
 import Header from './components/Header';
 import './App.css';
 
 function App() {
   const { user, loading } = useAuth();
+  const {
+    sessionsByDate,
+    currentSession,
+    loading: sessionsLoading,
+    startNewSession,
+    loadSession
+  } = useTimeTracking();
 
   if (loading) {
     return (
@@ -29,9 +38,18 @@ function App() {
   return (
     <div className="App">
       <Header />
-      <main className="app-main">
-        <TimeTrackingSheet />
-      </main>
+      <div className="app-layout">
+        <SessionSidebar
+          sessionsByDate={sessionsByDate}
+          currentSessionId={currentSession.id}
+          onSessionSelect={loadSession}
+          onNewSession={startNewSession}
+          loading={sessionsLoading}
+        />
+        <main className="app-main">
+          <TimeTrackingSheet />
+        </main>
+      </div>
     </div>
   );
 }
