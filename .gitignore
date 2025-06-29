@@ -28,3 +28,4 @@ dist-ssr
 *.local
 hosting.*.cache
 .firebase
+firebase-debug.log
