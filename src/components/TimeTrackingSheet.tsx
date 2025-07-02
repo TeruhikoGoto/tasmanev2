@@ -1,21 +1,48 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import SpreadsheetCell from './SpreadsheetCell';
 import TimeSelect from './TimeSelect';
 import TimeInputSelect from './TimeInputSelect';
 import { useTimeTracking } from '../hooks/useTimeTracking';
+import { TimeTrackingSession } from '../types/TimeEntry';
 import './TimeTrackingSheet.css';
 
-const TimeTrackingSheet: React.FC = () => {
+interface TimeTrackingSheetProps {
+  currentSession: TimeTrackingSession;
+}
+
+const TimeTrackingSheet: React.FC<TimeTrackingSheetProps> = ({ currentSession: propsCurrentSession }) => {
   const {
-    currentSession,
     loading,
     error,
-    saveSession,
+    saveSessionToSpecificSession,
     updateEntries,
     insertRowAfter
   } = useTimeTracking();
 
+  // propsから受け取ったcurrentSessionを使用
+  const currentSession = propsCurrentSession;
+
+  // デバッグ用：currentSessionが変更された際の追跡
+  console.log('🎯 TimeTrackingSheet レンダー (props使用):', {
+    currentSessionId: currentSession.id,
+    currentSessionDate: currentSession.sessionDate,
+    entriesCount: currentSession.entries?.length || 0,
+    timestamp: new Date().toISOString(),
+    source: 'props'
+  });
+
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [updateTrigger, setUpdateTrigger] = useState(0);
+  const prevSessionRef = useRef(currentSession);
+
+  // 強制再レンダリング用の関数
+  const triggerUpdate = () => {
+    setUpdateTrigger(prev => {
+      const newValue = prev + 1;
+      console.log('🎯 強制再レンダリング実行:', newValue, 'updateTrigger:', updateTrigger);
+      return newValue;
+    });
+  };
 
   // クリーンアップ
   useEffect(() => {
@@ -26,7 +53,53 @@ const TimeTrackingSheet: React.FC = () => {
     };
   }, []);
 
-  const entries = currentSession.entries;
+  // currentSessionからentriesを取得（状態変更を確実に反映）
+  const [displayEntries, setDisplayEntries] = useState(currentSession.entries || []);
+  
+  // currentSessionが変更されたときの処理
+  useEffect(() => {
+    const prev = prevSessionRef.current;
+    const hasChanged = prev.id !== currentSession.id || prev.sessionDate !== currentSession.sessionDate;
+    
+    console.log('🔄 TimeTrackingSheet: セッション変更検知 (props使用):', {
+      id: currentSession.id,
+      sessionDate: currentSession.sessionDate,
+      entriesCount: currentSession.entries?.length || 0,
+      totalHours: currentSession.totalHours,
+      hasEntries: !!(currentSession.entries && currentSession.entries.length > 0),
+      firstEntryContent: currentSession.entries?.[0]?.tasks?.[0]?.content || 'なし',
+      timestamp: new Date().toISOString(),
+      hasChanged: hasChanged,
+      previousId: prev.id,
+      previousDate: prev.sessionDate,
+      source: 'props'
+    });
+    
+    prevSessionRef.current = currentSession;
+    
+    // displayEntriesを完全に新しい配列で更新
+    const newEntries = currentSession.entries ? 
+      currentSession.entries.map(entry => ({
+        ...entry,
+        tasks: entry.tasks.map(task => ({...task}))
+      })) : [];
+    
+    setDisplayEntries(newEntries);
+    
+    console.log('📊 表示用entriesを更新:', {
+      sessionId: currentSession.id,
+      sessionDate: currentSession.sessionDate,
+      newEntriesCount: newEntries.length,
+      entryIds: newEntries.map(e => e.id),
+      entriesWithData: newEntries.filter(e => e.tasks.some(t => t.content)).length
+    });
+    
+    // 強制的に再レンダリング
+    triggerUpdate();
+    
+  }, [currentSession]); // オブジェクト全体を監視
+
+  const entries = displayEntries;
 
   // 分を時間分形式に変換する関数
   const formatTimeDisplay = (minutes: number): string => {
@@ -44,8 +117,15 @@ const TimeTrackingSheet: React.FC = () => {
     }
   };
 
-  // 工数サマリーを生成する関数
-  const generateWorkSummary = () => {
+  // 工数サマリーをuseMemoで計算（entriesの変更に応じて再計算）
+  const workSummary = useMemo(() => {
+    console.log('🧮 工数サマリーを再計算 (props使用):', {
+      sessionId: currentSession.id,
+      sessionDate: currentSession.sessionDate,
+      entriesCount: entries.length,
+      source: 'props'
+    });
+    
     const workGroups: { [key: string]: number } = {};
     
     entries.forEach(entry => {
@@ -58,12 +138,17 @@ const TimeTrackingSheet: React.FC = () => {
     });
     
     return workGroups;
-  };
+  }, [entries, currentSession.id, currentSession.sessionDate]);
 
-  const workSummary = generateWorkSummary();
-  const sortedWorkItems = Object.entries(workSummary)
-    .sort(([, a], [, b]) => b - a);
-  const totalTime = Object.values(workSummary).reduce((sum, time) => sum + time, 0);
+  const sortedWorkItems = useMemo(() => 
+    Object.entries(workSummary).sort(([, a], [, b]) => b - a),
+    [workSummary]
+  );
+  
+  const totalTime = useMemo(() => 
+    Object.values(workSummary).reduce((sum, time) => sum + time, 0),
+    [workSummary]
+  );
 
   // 自動保存関数
   const autoSave = async (updatedEntries: any[]) => {
@@ -72,14 +157,19 @@ const TimeTrackingSheet: React.FC = () => {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    // 1秒後に保存実行
+    // 6秒後に保存実行
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        await saveSession(updatedEntries);
+        console.log('💾 自動保存実行:', {
+          sessionId: currentSession.id,
+          sessionDate: currentSession.sessionDate,
+          entriesCount: updatedEntries.length
+        });
+        await saveSessionToSpecificSession(currentSession.id || '', currentSession.sessionDate, updatedEntries);
       } catch (error) {
         console.error('自動保存エラー:', error);
       }
-    }, 1000);
+    }, 6000);
   };
 
   // 時刻を1時間進める関数
@@ -99,6 +189,7 @@ const TimeTrackingSheet: React.FC = () => {
         endTime: ''
       }));
       updateEntries(clearedEntries);
+      setDisplayEntries(clearedEntries);
       autoSave(clearedEntries);
       return;
     }
@@ -117,6 +208,7 @@ const TimeTrackingSheet: React.FC = () => {
     });
 
     updateEntries(finalEntries);
+    setDisplayEntries(finalEntries);
     autoSave(finalEntries);
   };
 
@@ -134,6 +226,7 @@ const TimeTrackingSheet: React.FC = () => {
       return entry;
     });
     updateEntries(updatedEntries);
+    setDisplayEntries(updatedEntries);
     autoSave(updatedEntries);
   };
 
@@ -155,7 +248,7 @@ const TimeTrackingSheet: React.FC = () => {
   }
 
   return (
-    <div className="time-tracking-sheet">
+    <div className="time-tracking-sheet" key={`session-${currentSession.id}-${currentSession.sessionDate}`}>
       <div className="main-content">
         <div className="spreadsheet-container">
           <table className="spreadsheet-table">
@@ -173,8 +266,20 @@ const TimeTrackingSheet: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {entries.map((entry, index) => (
-                <tr key={entry.id}>
+              {entries.map((entry, index) => {
+                // テーブル描画時のデバッグログ（最初の3行のみ）
+                if (index < 3) {
+                  console.log(`entry: ${entry}`);
+                  console.log(`🎯 テーブル行 ${index}:`, {
+                    entryId: entry.id,
+                    startTime: entry.startTime,
+                    endTime: entry.endTime,
+                    tasksContent: entry.tasks.map(t => t.content).filter(Boolean)
+                  });
+                }
+                
+                return (
+                <tr key={`${currentSession.id}-${entry.id}-${index}`}>
                   <td>
                     {index === 0 ? (
                       <TimeSelect
@@ -211,7 +316,8 @@ const TimeTrackingSheet: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
           <div className="table-controls">

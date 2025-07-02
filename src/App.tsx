@@ -71,7 +71,10 @@ function App() {
           loading={sessionsLoading}
         />
         <main className="app-main">
-          <TimeTrackingSheet />
+          <TimeTrackingSheet 
+            key={`timesheet-${currentSession.id}-${currentSession.sessionDate}`}
+            currentSession={currentSession}
+          />
         </main>
       </div>
     </div>

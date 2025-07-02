@@ -20,7 +20,7 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 // 開発環境でEmulatorに接続
-if (import.meta.env.DEV && !import.meta.env.VITE_USE_PRODUCTION_FIREBASE) {
+if (import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true') {
   try {
     connectAuthEmulator(auth, 'http://localhost:9099');
     console.log('🔐 Auth Emulatorに接続しました');
@@ -29,7 +29,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_USE_PRODUCTION_FIREBASE) {
   }
   
   try {
-    connectFirestoreEmulator(db, 'localhost', 8080);
+    connectFirestoreEmulator(db, 'localhost', 8081);
     console.log('🔥 Firestore Emulatorに接続しました');
   } catch (error) {
     console.log('Firestore Emulatorは既に接続済みです');

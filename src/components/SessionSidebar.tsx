@@ -6,8 +6,8 @@ import './SessionSidebar.css';
 interface SessionSidebarProps {
   sessionsByDate: SessionsByDate;
   currentSessionId?: string;
-  onSessionSelect: (sessionId: string) => void;
-  onNewSession: () => void;
+  onSessionSelect: (sessionId: string) => Promise<void>;
+  onNewSession: (sessionDate?: string) => Promise<void>;
   loading: boolean;
 }
 
@@ -20,6 +20,27 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
 }) => {
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const handleNewSession = async (sessionDate?: string) => {
+    setIsCreatingSession(true);
+    setShowDatePicker(false);
+    try {
+      await onNewSession(sessionDate);
+    } catch (error) {
+      console.error('セッション作成エラー:', error);
+    } finally {
+      setIsCreatingSession(false);
+    }
+  };
+
+  const handleDateSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedDate = e.target.value;
+    if (selectedDate) {
+      handleNewSession(selectedDate);
+    }
+  };
 
   // 日付から日のみを取得する関数
   const getDayFromDate = (dateString: string): string => {
@@ -100,17 +121,42 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
     <div className="session-sidebar">
       <div className="sidebar-header">
         <h2>セッション履歴</h2>
-        <button onClick={onNewSession} className="new-session-btn">
-          新規セッション
-        </button>
+        <div className="new-session-controls">
+          <button 
+            onClick={() => handleNewSession()} 
+            className="new-session-btn"
+            disabled={isCreatingSession}
+          >
+            {isCreatingSession ? '作成中...' : '今日のセッション'}
+          </button>
+          <button 
+            onClick={() => setShowDatePicker(!showDatePicker)}
+            className="date-picker-btn"
+            disabled={isCreatingSession}
+          >
+            📅
+          </button>
+          {showDatePicker && (
+            <input
+              type="date"
+              className="date-picker"
+              onChange={handleDateSelect}
+              max={new Date().toISOString().split('T')[0]}
+            />
+          )}
+        </div>
       </div>
 
       <div className="sidebar-content">
         {years.length === 0 ? (
           <div className="no-sessions">
             <p>セッションがありません</p>
-            <button onClick={onNewSession} className="create-first-session-btn">
-              最初のセッションを作成
+            <button 
+              onClick={() => handleNewSession()} 
+              className="create-first-session-btn"
+              disabled={isCreatingSession}
+            >
+              {isCreatingSession ? '作成中...' : '最初のセッションを作成'}
             </button>
           </div>
         ) : (
@@ -163,7 +209,21 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
                                     <div
                                       key={session.id}
                                       className={`session-item ${session.id === currentSessionId ? 'active' : ''}`}
-                                      onClick={() => session.id && onSessionSelect(session.id)}
+                                      onClick={async () => {
+                                        console.log('📅 SessionSidebar: セッションクリック:', {
+                                          sessionId: session.id,
+                                          sessionDate: session.sessionDate,
+                                          isCurrentSession: session.id === currentSessionId
+                                        });
+                                        if (session.id) {
+                                          try {
+                                            await onSessionSelect(session.id);
+                                            console.log('✅ セッション選択完了:', session.id);
+                                          } catch (error) {
+                                            console.error('❌ セッション選択エラー:', error);
+                                          }
+                                        }
+                                      }}
                                     >
                                       <div className="session-name">
                                         {getDayFromDate(session.sessionDate)}

@@ -6,8 +6,6 @@ import {
   updateDoc, 
   deleteDoc, 
   onSnapshot,
-  query,
-  orderBy,
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -18,19 +16,40 @@ export const useFirestore = (collectionName: string) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, collectionName), orderBy('createdAt', 'desc'));
+    setLoading(true);
+    setError(null);
     
-    const unsubscribe = onSnapshot(q, 
+    // コレクションが存在しない場合でもエラーにならないように、シンプルなクエリから始める
+    const collectionRef = collection(db, collectionName);
+    
+    const unsubscribe = onSnapshot(collectionRef, 
       (snapshot) => {
+        console.log(`📊 Firestore ${collectionName} snapshot:`, {
+          size: snapshot.size,
+          empty: snapshot.empty,
+          docs: snapshot.docs.length
+        });
+        
         const docs = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        setData(docs);
+        
+        // createdAtでソート（存在する場合のみ）
+        const sortedDocs = docs.sort((a: any, b: any) => {
+          if (a.createdAt && b.createdAt) {
+            return b.createdAt.toMillis() - a.createdAt.toMillis();
+          }
+          return 0;
+        });
+        
+        setData(sortedDocs);
         setLoading(false);
       },
       (err) => {
+        console.error(`❌ Firestore ${collectionName} error:`, err);
         setError(err.message);
+        setData([]); // エラー時は空配列を設定
         setLoading(false);
       }
     );

@@ -21,21 +21,64 @@
   color: #333;
 }
 
+.new-session-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  position: relative;
+}
+
 .new-session-btn {
-  width: 100%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 10px 16px;
+  padding: 8px 12px;
   border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.2s;
+  font-size: 11px;
+  font-weight: 500;
+  transition: transform 0.2s, box-shadow 0.2s;
+  flex: 1;
 }
 
 .new-session-btn:hover {
   transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.new-session-btn:active {
+  transform: translateY(0);
+}
+
+.date-picker-btn {
+  background: #f0f0f0;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.date-picker-btn:hover {
+  background: #e0e0e0;
+}
+
+.date-picker {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
 }
 
 .sidebar-content {
