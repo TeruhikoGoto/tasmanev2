@@ -24,7 +24,7 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow: visible;
   flex: 1;
   min-width: 0;
 }
@@ -411,7 +411,7 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  z-index: 10000;
   max-height: 200px;
   overflow-y: auto;
 }
@@ -482,8 +482,8 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  max-height: 200px;
+  z-index: 10000;
+  max-height: 240px;
   overflow-y: auto;
 }
 
