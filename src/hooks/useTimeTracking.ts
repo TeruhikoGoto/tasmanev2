@@ -290,8 +290,16 @@ export const useTimeTracking = () => {
 
   // 指定した行の下に新しい行を追加
   const insertRowAfter = (index: number) => {
+    console.log('🔨 insertRowAfter開始:', { 
+      index, 
+      entriesCount: currentSession.entries.length,
+      sessionId: currentSession.id 
+    });
+    
     const newEntries = [...currentSession.entries];
     const previousEntry = newEntries[index];
+    
+    console.log('📝 前の行データ:', { previousEntry });
     
     // 新しいエントリのIDを生成（最大ID + 1）
     const maxId = Math.max(0, ...newEntries.map(entry => parseInt(entry.id) || 0));
@@ -333,10 +341,19 @@ export const useTimeTracking = () => {
       ]
     };
     
+    console.log('➕ 新しいエントリ作成:', { newEntry });
+    
     // 指定したインデックスの後に挿入
     newEntries.splice(index + 1, 0, newEntry);
     
+    console.log('📊 更新後のentries:', { 
+      newEntriesCount: newEntries.length,
+      lastEntryId: newEntries[newEntries.length - 1]?.id 
+    });
+    
     updateEntries(newEntries);
+    
+    console.log('✅ insertRowAfter完了');
   };
 
   // セッションを年月別に整理

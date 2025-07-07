@@ -8,15 +8,19 @@ import './TimeTrackingSheet.css';
 
 interface TimeTrackingSheetProps {
   currentSession: TimeTrackingSession;
+  onUpdateEntries: (entries: any[]) => void;
+  onInsertRowAfter: (index: number) => void;
 }
 
-const TimeTrackingSheet: React.FC<TimeTrackingSheetProps> = ({ currentSession: propsCurrentSession }) => {
+const TimeTrackingSheet: React.FC<TimeTrackingSheetProps> = ({ 
+  currentSession: propsCurrentSession, 
+  onUpdateEntries, 
+  onInsertRowAfter 
+}) => {
   const {
     loading,
     error,
-    saveSessionToSpecificSession,
-    updateEntries,
-    insertRowAfter
+    saveSessionToSpecificSession
   } = useTimeTracking();
 
   // propsから受け取ったcurrentSessionを使用
@@ -188,7 +192,7 @@ const TimeTrackingSheet: React.FC<TimeTrackingSheetProps> = ({ currentSession: p
         startTime: '',
         endTime: ''
       }));
-      updateEntries(clearedEntries);
+      onUpdateEntries(clearedEntries);
       setDisplayEntries(clearedEntries);
       autoSave(clearedEntries);
       return;
@@ -207,7 +211,7 @@ const TimeTrackingSheet: React.FC<TimeTrackingSheetProps> = ({ currentSession: p
       };
     });
 
-    updateEntries(finalEntries);
+    onUpdateEntries(finalEntries);
     setDisplayEntries(finalEntries);
     autoSave(finalEntries);
   };
@@ -225,7 +229,7 @@ const TimeTrackingSheet: React.FC<TimeTrackingSheetProps> = ({ currentSession: p
       }
       return entry;
     });
-    updateEntries(updatedEntries);
+    onUpdateEntries(updatedEntries);
     setDisplayEntries(updatedEntries);
     autoSave(updatedEntries);
   };
@@ -322,8 +326,15 @@ const TimeTrackingSheet: React.FC<TimeTrackingSheetProps> = ({ currentSession: p
           </table>
           <div className="table-controls">
             <button
+              type="button"
               className="add-row-btn-bottom"
-              onClick={() => insertRowAfter(entries.length - 1)}
+              onClick={() => {
+                console.log('🎯 プラスボタンクリック:', { entriesLength: entries.length });
+                const newIndex = entries.length - 1;
+                onInsertRowAfter(newIndex);
+                // 強制的に再レンダリングをトリガー
+                triggerUpdate();
+              }}
               title="一番下に行を追加"
             >
               +

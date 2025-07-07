@@ -16,7 +16,9 @@ function App() {
     currentSession,
     loading: sessionsLoading,
     startNewSession,
-    loadSession
+    loadSession,
+    updateEntries,
+    insertRowAfter
   } = useTimeTracking();
 
   // Basic認証のチェック
@@ -74,6 +76,8 @@ function App() {
           <TimeTrackingSheet 
             key={`timesheet-${currentSession.id}-${currentSession.sessionDate}`}
             currentSession={currentSession}
+            onUpdateEntries={updateEntries}
+            onInsertRowAfter={insertRowAfter}
           />
         </main>
       </div>
