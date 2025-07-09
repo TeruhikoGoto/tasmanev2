@@ -1,0 +1,126 @@
+.session-memo {
+  margin-bottom: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+}
+
+.memo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.memo-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.memo-edit-btn {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.memo-edit-btn:hover {
+  background-color: #1565c0;
+}
+
+.memo-editing {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.memo-textarea {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 120px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.memo-textarea:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+.memo-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.memo-save-btn,
+.memo-cancel-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.memo-save-btn {
+  background-color: #1976d2;
+  color: white;
+}
+
+.memo-save-btn:hover {
+  background-color: #1565c0;
+}
+
+.memo-cancel-btn {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.memo-cancel-btn:hover {
+  background-color: #eeeeee;
+}
+
+.memo-display {
+  min-height: 60px;
+}
+
+.memo-content {
+  line-height: 1.6;
+  color: #333;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.memo-content p {
+  margin: 0 0 8px 0;
+}
+
+.memo-content p:last-child {
+  margin-bottom: 0;
+}
+
+.memo-placeholder {
+  color: #999;
+  font-style: italic;
+  padding: 12px;
+  border: 2px dashed #ddd;
+  border-radius: 4px;
+  text-align: center;
+  background-color: #fafafa;
+}

@@ -18,6 +18,7 @@ function App() {
     startNewSession,
     loadSession,
     updateEntries,
+    updateMemo,
     insertRowAfter
   } = useTimeTracking();
 
@@ -77,6 +78,7 @@ function App() {
             key={`timesheet-${currentSession.id}-${currentSession.sessionDate}`}
             currentSession={currentSession}
             onUpdateEntries={updateEntries}
+            onUpdateMemo={updateMemo}
             onInsertRowAfter={insertRowAfter}
           />
         </main>

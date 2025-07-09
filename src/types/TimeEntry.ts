@@ -16,6 +16,7 @@ export interface TimeTrackingSession {
   entries: TimeEntry[];
   totalHours: number;
   userId: string;
+  memo?: string; // セッション用メモ
   createdAt?: any; // Firestore Timestamp
   updatedAt?: any; // Firestore Timestamp
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import SpreadsheetCell from './SpreadsheetCell';
 import TimeSelect from './TimeSelect';
 import TimeInputSelect from './TimeInputSelect';
+import SessionMemo from './SessionMemo';
 import { useTimeTracking } from '../hooks/useTimeTracking';
 import { TimeTrackingSession } from '../types/TimeEntry';
 import './TimeTrackingSheet.css';
@@ -9,12 +10,14 @@ import './TimeTrackingSheet.css';
 interface TimeTrackingSheetProps {
   currentSession: TimeTrackingSession;
   onUpdateEntries: (entries: any[]) => void;
+  onUpdateMemo: (memo: string) => Promise<void>;
   onInsertRowAfter: (index: number) => void;
 }
 
 const TimeTrackingSheet: React.FC<TimeTrackingSheetProps> = ({ 
   currentSession: propsCurrentSession, 
   onUpdateEntries, 
+  onUpdateMemo,
   onInsertRowAfter 
 }) => {
   const {
@@ -343,6 +346,10 @@ const TimeTrackingSheet: React.FC<TimeTrackingSheetProps> = ({
         </div>
         
         <div className="display-area">
+          <SessionMemo 
+            memo={currentSession.memo || ''}
+            onMemoChange={onUpdateMemo}
+          />
           <h3>工数サマリー</h3>
           <div className="display-content">
             {sortedWorkItems.length === 0 ? (

@@ -60,7 +60,8 @@ export const useTimeTracking = () => {
             sessionDate: todaySession.sessionDate,
             entries: todaySession.entries || createDefaultEntries(),
             totalHours: todaySession.totalHours || 0,
-            userId: user.uid
+            userId: user.uid,
+            memo: todaySession.memo || ''
           });
         } else {
           // 今日のセッションが存在しない場合は新規作成
@@ -69,7 +70,8 @@ export const useTimeTracking = () => {
             sessionDate: today,
             entries: createDefaultEntries(),
             totalHours: 0,
-            userId: user.uid
+            userId: user.uid,
+            memo: ''
           });
         }
         setIsInitialized(true);
@@ -87,7 +89,8 @@ export const useTimeTracking = () => {
         sessionDate: currentSession.sessionDate,
         entries,
         totalHours: calculateTotalHours(entries),
-        userId: user.uid
+        userId: user.uid,
+        memo: currentSession.memo
       };
 
       if (currentSession.id) {
@@ -117,7 +120,8 @@ export const useTimeTracking = () => {
         sessionDate: sessionDate,
         entries,
         totalHours: calculateTotalHours(entries),
-        userId: user.uid
+        userId: user.uid,
+        memo: currentSession.memo
       };
 
       console.log('💾 特定セッションに保存:', {
@@ -223,7 +227,8 @@ export const useTimeTracking = () => {
           tasks: [...entry.tasks.map((task: any) => ({...task}))]
         }))] : createDefaultEntries(),
         totalHours: session.totalHours || 0,
-        userId: user.uid
+        userId: user.uid,
+        memo: session.memo || ''
       };
       
       console.log('🚀 新しいセッションを設定:', {
@@ -286,6 +291,33 @@ export const useTimeTracking = () => {
       entries,
       totalHours: calculateTotalHours(entries)
     }));
+  };
+
+  // メモを更新してFirestoreに保存
+  const updateMemo = async (memo: string) => {
+    setCurrentSession(prev => ({ 
+      ...prev, 
+      memo
+    }));
+
+    // Firestoreに自動保存
+    if (currentSession.id && user) {
+      try {
+        const sessionData: Partial<TimeTrackingSession> = {
+          memo,
+          updatedAt: new Date()
+        };
+        
+        console.log('📝 メモをFirestoreに保存:', { 
+          sessionId: currentSession.id, 
+          memoLength: memo.length 
+        });
+        
+        await updateDocument(currentSession.id, sessionData);
+      } catch (error) {
+        console.error('メモ保存エラー:', error);
+      }
+    }
   };
 
   // 指定した行の下に新しい行を追加
@@ -388,7 +420,8 @@ export const useTimeTracking = () => {
           sessionDate: sessionDate,
           entries: session.entries || [],
           totalHours: session.totalHours || 0,
-          userId: session.userId || user?.uid || ''
+          userId: session.userId || user?.uid || '',
+          memo: session.memo || ''
         };
         
         sessionsByDate[year][monthKey].push(normalizedSession);
@@ -419,6 +452,7 @@ export const useTimeTracking = () => {
     startNewSession,
     loadSession,
     updateEntries,
+    updateMemo,
     insertRowAfter,
     calculateTotalHours
   };
