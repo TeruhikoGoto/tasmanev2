@@ -225,9 +225,23 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
                                         }
                                       }}
                                     >
-                                      <div className="session-name">
-                                        {getDayFromDate(session.sessionDate)}
+                                      <div className="session-header">
+                                        <div className="session-name">
+                                          {getDayFromDate(session.sessionDate)}
+                                        </div>
+                                        {session.memo && (
+                                          <div className="session-memo-indicator" title={session.memo}>
+                                            📝
+                                          </div>
+                                        )}
                                       </div>
+                                      {session.memo && (
+                                        <div className="session-memo-preview">
+                                          {session.memo.length > 30 
+                                            ? `${session.memo.substring(0, 30)}...` 
+                                            : session.memo}
+                                        </div>
+                                      )}
                                       <div className="session-meta">
                                         <span className="session-hours">
                                           {formatMinutesToHoursMinutes(session.totalHours || 0)}
